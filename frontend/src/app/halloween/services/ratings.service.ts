@@ -30,6 +30,8 @@ const HouseSchema = z.object({
   ]),
 });
 
+//type HouseEntryThing = Zod.infer<typeof HouseSchema>;
+
 const HouseResponseSchema = z.array(HouseSchema);
 
 interface WeirdResponse {
@@ -52,9 +54,10 @@ export class RatingsService {
   #http = inject(HttpClient);
 
   addHouseToList(house: HouseRatingEntry, tempId: string) {
-    return this.#http
-      .post<HouseListEntity>('/api/houses', house)
-      .pipe(map((r) => [r, tempId] as [HouseListEntity, string]));
+    return this.#http.post<HouseListEntity>('/api/houses', house).pipe(
+      parseResponse(HouseResponseSchema),
+      map((r) => [r, tempId] as [HouseListEntity, string])
+    );
   }
 
   getHouseList() {
