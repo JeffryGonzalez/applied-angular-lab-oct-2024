@@ -35,7 +35,7 @@ export const HouseRatingStore = signalStore(
       },
       add() {
         const h2 = getObjFromSignal(store as unknown as HouseRatingStore);
-        houseListStore.add(h2);
+        // TODO houseListStore.add(h2);
         updateState(store, 'added house', initialState);
       },
     };

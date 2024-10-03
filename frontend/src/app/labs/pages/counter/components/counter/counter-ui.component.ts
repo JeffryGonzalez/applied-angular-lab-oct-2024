@@ -1,11 +1,5 @@
-import {
-  Component,
-  ChangeDetectionStrategy,
-  signal,
-  computed,
-  inject,
-} from '@angular/core';
-import { CounterStore } from './counter.store';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { CounterStoreDemo } from '../../counter.store';
 
 @Component({
   selector: 'app-counter-ui-component',
@@ -15,8 +9,8 @@ import { CounterStore } from './counter.store';
   template: `
     <div class="join">
       <button
-        [disabled]="store.decrementDisabled()"
-        (click)="store.decrement()"
+        [disabled]="store.decrementButtonDisabled()"
+        (click)="decrement()"
         class="btn btn-error join-item"
       >
         -
@@ -24,15 +18,20 @@ import { CounterStore } from './counter.store';
       <span class=" join-item p-2 font-black text-2xl">{{
         store.current()
       }}</span>
-      <button (click)="store.increment()" class="btn btn-primary join-item">
-        +
-      </button>
+      <button (click)="increment()" class="btn btn-primary join-item">+</button>
     </div>
-    <span class="p-2 w-12 font-bold text-2xl ">{{ store.fizzBuzz() }}</span>
+    <span class="p-2 w-12 font-bold text-2xl ">{{ true }}</span>
   `,
   styles: `
   `,
 })
 export class CounterUiComponent {
-  store = inject(CounterStore);
+  store = inject(CounterStoreDemo);
+
+  decrement() {
+    this.store.decrement();
+  }
+  increment() {
+    this.store.increment();
+  }
 }

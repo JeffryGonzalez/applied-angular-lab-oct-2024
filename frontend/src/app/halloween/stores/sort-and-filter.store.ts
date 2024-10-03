@@ -1,6 +1,12 @@
-import { patchState, signalStore, withMethods, withState } from '@ngrx/signals';
-import { ScoreAndFilterState } from '../pages/house-rating/types';
 import { withDevtools } from '@angular-architects/ngrx-toolkit';
+import {
+  patchState,
+  signalStore,
+  withComputed,
+  withMethods,
+  withState,
+} from '@ngrx/signals';
+import { ScoreAndFilterState } from '../pages/house-rating/types';
 
 export const HouseSortAndFilterStore = signalStore(
   withState<ScoreAndFilterState>({
@@ -10,6 +16,9 @@ export const HouseSortAndFilterStore = signalStore(
     sortBy: 'address',
   }),
   withDevtools('house-sort-filter'),
+  withComputed((store) => {
+    return {};
+  }),
   withMethods((store) => {
     return {
       setScoreFilter: (score: number) => {

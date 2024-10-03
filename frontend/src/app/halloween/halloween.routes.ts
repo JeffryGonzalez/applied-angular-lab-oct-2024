@@ -7,11 +7,13 @@ import { RatingsService } from './services/ratings.service';
 import { HousePendingStore } from './stores/house-pending.store';
 import { HouseEditComponent } from './pages/house-rating/house-edit.component';
 import { HouseSortAndFilterStore } from './stores/sort-and-filter.store';
+import { HouseStore } from './stores/house.store';
 
 export const HALLOWEEN_ROUTES: Routes = [
   {
     path: '',
     providers: [
+      HouseStore,
       HouseListStore,
       RatingsService,
       HousePendingStore,

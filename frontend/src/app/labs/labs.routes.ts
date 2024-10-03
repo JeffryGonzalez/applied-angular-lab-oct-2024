@@ -5,6 +5,7 @@ import { CounterStore } from './pages/counter/components/counter/counter.store';
 import { CounterUiComponent } from './pages/counter/components/counter/counter-ui.component';
 import { CounterPrefsComponent } from './pages/counter/components/prefs/prefs.component';
 import { CounterPrefsStore } from './pages/counter/components/prefs/counter-prefs.store';
+import { CounterStoreDemo } from './pages/counter/counter.store';
 
 export const LABS_ROUTES: Routes = [
   {
@@ -14,7 +15,7 @@ export const LABS_ROUTES: Routes = [
       {
         path: 'counter',
         component: CounterComponent,
-        providers: [CounterStore, CounterPrefsStore],
+        providers: [CounterStore, CounterPrefsStore, CounterStoreDemo],
         children: [
           {
             path: 'ui',

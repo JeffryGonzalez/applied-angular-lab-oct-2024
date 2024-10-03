@@ -1,5 +1,12 @@
-import { Component, ChangeDetectionStrategy, inject } from '@angular/core';
+import {
+  Component,
+  ChangeDetectionStrategy,
+  inject,
+  computed,
+  OnInit,
+} from '@angular/core';
 import { HouseSortAndFilterStore } from '../../../stores/sort-and-filter.store';
+import { HouseListStore } from '../../../stores/house-list.store';
 
 @Component({
   selector: 'app-house-list-sort-and-filter',
@@ -10,16 +17,22 @@ import { HouseSortAndFilterStore } from '../../../stores/sort-and-filter.store';
     <div class="container w-full">
       <div class="flex justify-between items-center w-full min-w-full">
         <div class="">
-          <input
-            #score
-            type="range"
-            min="1"
-            max="12"
-            class="range"
-            step="1"
-            (change)="store.setScoreFilter(score.valueAsNumber)"
-            [value]="store.scoreFilter()"
-          />
+          <label class="label">
+            <span class="label-text pr-2"
+              >Scores
+              <span class="text-xs"> (<= {{ store.scoreFilter() }})</span></span
+            >
+            <input type="text" />
+            <!-- <input
+              #score
+              type="range"
+              [min]="lowestScore()"
+              [max]="highestScore()"
+              class="range"
+              step="1"
+              (change)="store.setScoreFilter(score.valueAsNumber)"
+            /> -->
+          </label>
         </div>
         <div class="form-control">
           <label class="label cursor-pointer">
@@ -71,6 +84,16 @@ import { HouseSortAndFilterStore } from '../../../stores/sort-and-filter.store';
   `,
   styles: ``,
 })
-export class SortAndFilterComponent {
+export class SortAndFilterComponent implements OnInit {
   store = inject(HouseSortAndFilterStore);
+  listStore = inject(HouseListStore);
+
+  highestScore = computed(() => this.listStore.getAllScores()[0] || 0);
+  lowestScore = computed(() => {
+    const idx = this.listStore.getAllScores().length - 1;
+    return this.listStore.getAllScores()[idx - 1];
+  });
+  ngOnInit(): void {
+    this.store.setScoreFilter(this.highestScore());
+  }
 }

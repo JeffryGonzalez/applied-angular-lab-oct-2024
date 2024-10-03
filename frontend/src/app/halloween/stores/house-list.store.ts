@@ -1,7 +1,5 @@
 import { updateState, withDevtools } from '@angular-architects/ngrx-toolkit';
-import { HttpErrorResponse } from '@angular/common/http';
 import { computed, inject } from '@angular/core';
-import { tapResponse } from '@ngrx/operators';
 import {
   patchState,
   signalStore,
@@ -10,24 +8,27 @@ import {
   withMethods,
   withState,
 } from '@ngrx/signals';
-import { addEntity, setEntities, withEntities } from '@ngrx/signals/entities';
-import { rxMethod } from '@ngrx/signals/rxjs-interop';
+import { addEntity, removeEntity, withEntities } from '@ngrx/signals/entities';
 import {
   setError,
   setFulfilled,
   setPending,
   withRequestStatus,
 } from '@shared/request-status.feature';
-import { map, mergeMap, pipe, tap } from 'rxjs';
 import {
   HouseListEntity,
   HouseRatingEntry,
   HouseRatingListItem,
 } from '../pages/house-rating/types';
-import { RatingsService } from '../services/ratings.service';
 import { getTotalScore } from '../pages/house-rating/utils';
+import { RatingsService } from '../services/ratings.service';
 import { HousePendingStore } from './house-pending.store';
 import { HouseSortAndFilterStore } from './sort-and-filter.store';
+import { HouseStore } from './house.store';
+import { rxMethod } from '@ngrx/signals/rxjs-interop';
+import { map, mergeMap, pipe, tap } from 'rxjs';
+import { HttpErrorResponse } from '@angular/common/http';
+import { tapResponse } from '@ngrx/operators';
 
 export const HouseListStore = signalStore(
   withDevtools('house-list'),
@@ -37,7 +38,9 @@ export const HouseListStore = signalStore(
     selectedHouse: undefined,
   }),
   withComputed((store) => {
-    const pendingStore = inject(HousePendingStore);
+    // const pendingStore = inject(HousePendingStore);
+
+    const houseStore = inject(HouseStore);
     const sortStore = inject(HouseSortAndFilterStore);
     return {
       getSelectedHouse: computed(() => {
@@ -48,11 +51,19 @@ export const HouseListStore = signalStore(
           return undefined;
         }
       }),
+      getAllScores: computed(() =>
+        store
+          .entities()
+          .map(
+            (e) =>
+              ({ ...e, totalScore: getTotalScore(e) } as HouseRatingListItem)
+          )
+          .map((e) => e.totalScore)
+          .sort()
+      ),
+
       getHouseListModel: computed(() => {
-        const combined = [
-          ...store.entities(),
-          ...pendingStore.getHouseListModel(),
-        ];
+        const combined = [...houseStore.entities(), ...store.entities()];
         let filtered = [
           ...combined
             .map(
@@ -82,47 +93,28 @@ export const HouseListStore = signalStore(
   }),
   withMethods((store) => {
     const service = inject(RatingsService);
-    const pendingStore = inject(HousePendingStore);
+
     return {
-      setCurrent: (id: string) => patchState(store, { selectedHouse: id }),
-      _load: rxMethod<void>(
-        pipe(
-          tap(() => patchState(store, setPending())),
-          mergeMap(() =>
-            service.getHouseList().pipe(
-              tapResponse({
-                next: (d) => patchState(store, setEntities(d), setFulfilled()),
-                error: () =>
-                  patchState(
-                    store,
-                    setError('Error Getting List - Server Returned Bad Data')
-                  ),
-              })
-            )
-          )
-        )
-      ),
       add: rxMethod<HouseRatingEntry>(
         pipe(
           map((h) => {
             const tempId = crypto.randomUUID();
             return [h, tempId] as [HouseRatingEntry, string];
           }),
-          tap(() => patchState(store, setPending())),
-          tap(([h, id]) => {
-            pendingStore.addHouse({ ...h, id });
-          }),
+          tap(([h, tempId]) =>
+            patchState(store, addEntity({ ...h, id: tempId }), setPending())
+          ),
+
           mergeMap(([h, id]) =>
             service.addHouseToList(h, id).pipe(
               tapResponse({
-                next: ([h, tempId]) => {
+                next: () => {
                   updateState(
                     store,
                     'adding from api',
-                    addEntity(h),
+                    removeEntity(id),
                     setFulfilled()
                   );
-                  pendingStore.removeHouse(tempId);
                 },
                 error: (e: HttpErrorResponse) =>
                   patchState(
@@ -134,11 +126,14 @@ export const HouseListStore = signalStore(
           )
         )
       ),
+      setCurrent: (id: string) => patchState(store, { selectedHouse: id }),
     };
   }),
   withHooks({
     onInit(store) {
-      store._load();
+      // const filter = inject(HouseSortAndFilterStore);
+      // store._load();
+      // filter.setScoreFilter(store.getAllScores()[0]);
     },
   })
 );
