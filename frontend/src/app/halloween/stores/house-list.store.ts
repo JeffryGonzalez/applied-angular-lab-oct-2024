@@ -8,6 +8,7 @@ import {
   withComputed,
   withHooks,
   withMethods,
+  withState,
 } from '@ngrx/signals';
 import { addEntity, setEntities, withEntities } from '@ngrx/signals/entities';
 import { rxMethod } from '@ngrx/signals/rxjs-interop';
@@ -32,10 +33,21 @@ export const HouseListStore = signalStore(
   withDevtools('house-list'),
   withRequestStatus(),
   withEntities<HouseListEntity>(),
+  withState<{ selectedHouse: string | undefined }>({
+    selectedHouse: undefined,
+  }),
   withComputed((store) => {
     const pendingStore = inject(HousePendingStore);
     const sortStore = inject(HouseSortAndFilterStore);
     return {
+      getSelectedHouse: computed(() => {
+        const selectedId = store.selectedHouse();
+        if (selectedId) {
+          return store.entityMap()[selectedId];
+        } else {
+          return undefined;
+        }
+      }),
       getHouseListModel: computed(() => {
         const combined = [
           ...store.entities(),
@@ -72,6 +84,7 @@ export const HouseListStore = signalStore(
     const service = inject(RatingsService);
     const pendingStore = inject(HousePendingStore);
     return {
+      setCurrent: (id: string) => patchState(store, { selectedHouse: id }),
       _load: rxMethod<void>(
         pipe(
           tap(() => patchState(store, setPending())),
