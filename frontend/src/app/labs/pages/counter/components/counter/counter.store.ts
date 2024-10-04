@@ -8,7 +8,7 @@ import {
   withMethods,
   withState,
 } from '@ngrx/signals';
-import { CountByValues, CounterPrefsStore } from '../prefs/counter-prefs.store';
+import { CounterPrefsStore } from '../prefs/counter-prefs.store';
 
 export const CounterStore = signalStore(
   withState({ current: 0 }),

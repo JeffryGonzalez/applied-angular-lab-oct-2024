@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
-import { HouseRatingStore } from './house-rating.store';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import {
   FormControl,
   FormGroup,
@@ -7,14 +7,14 @@ import {
   Validators,
 } from '@angular/forms';
 import { debounceTime, filter } from 'rxjs';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { HouseEntryStore } from '../../stores/house-entry.store';
 
 @Component({
   selector: 'app-house-rating',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [ReactiveFormsModule],
-  providers: [HouseRatingStore],
+  providers: [HouseEntryStore],
   template: `
     @if(false) {
     <p>We are saving your new house rating!</p>
@@ -40,7 +40,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
         <div>
           <p>Quality Rating</p>
           <div class="rating rating-lg">
-            @for(rating of [0,1,2,3,4]; track rating) {
+            @for(rating of store.ratings(); track rating) {
             <input
               type="radio"
               (change)="store.set('qualityRating', rating)"
@@ -50,13 +50,13 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
             />
             }
             <span class="indicator-item badge badge-secondary">
-              {{ store.qualityRating() + 1 }}
+              {{ store.qualityRating() }}
             </span>
           </div>
         </div>
         <p>Quantity Rating</p>
         <div class="rating rating-lg">
-          @for(rating of [0,1,2,3,4]; track rating) {
+          @for(rating of store.ratings(); track rating) {
           <input
             type="radio"
             (change)="store.set('quantityRating', rating)"
@@ -66,7 +66,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
           />
           }
           <span class="indicator-item badge badge-secondary">
-            {{ store.quantityRating() + 1 }}
+            {{ store.quantityRating() }}
           </span>
         </div>
         <div class="form-control">
@@ -107,8 +107,8 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
   `,
   styles: ``,
 })
-export class HouseRatingComponent {
-  store = inject(HouseRatingStore);
+export class HouseEntryComponent {
+  store = inject(HouseEntryStore);
 
   constructor() {
     this.form.controls.address.valueChanges

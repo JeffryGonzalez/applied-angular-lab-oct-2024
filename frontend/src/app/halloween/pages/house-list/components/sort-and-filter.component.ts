@@ -1,12 +1,5 @@
-import {
-  Component,
-  ChangeDetectionStrategy,
-  inject,
-  computed,
-  OnInit,
-} from '@angular/core';
-import { HouseSortAndFilterStore } from '../../../stores/sort-and-filter.store';
-import { HouseListStore } from '../../../stores/house-list.store';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { HouseListSortAndFilterStore } from '../../../stores/house-sort-and-filter.store';
 
 @Component({
   selector: 'app-house-list-sort-and-filter',
@@ -22,16 +15,17 @@ import { HouseListStore } from '../../../stores/house-list.store';
               >Scores
               <span class="text-xs"> (<= {{ store.scoreFilter() }})</span></span
             >
-            <input type="text" />
-            <!-- <input
+
+            <input
               #score
               type="range"
-              [min]="lowestScore()"
-              [max]="highestScore()"
+              [min]="1"
+              [max]="12"
               class="range"
+              [value]="store.scoreFilter()"
               step="1"
               (change)="store.setScoreFilter(score.valueAsNumber)"
-            /> -->
+            />
           </label>
         </div>
         <div class="form-control">
@@ -64,7 +58,7 @@ import { HouseListStore } from '../../../stores/house-list.store';
               type="radio"
               name="sorting"
               class="radio"
-              (change)="store.setSortByAddress()"
+              (change)="store.setSortBy('address')"
               [checked]="store.sortBy() === 'address'"
             />
           </label>
@@ -74,7 +68,7 @@ import { HouseListStore } from '../../../stores/house-list.store';
               type="radio"
               name="sorting"
               class="radio"
-              (change)="store.setSortByScore()"
+              (change)="store.setSortBy('score')"
               [checked]="store.sortBy() === 'score'"
             />
           </label>
@@ -84,16 +78,6 @@ import { HouseListStore } from '../../../stores/house-list.store';
   `,
   styles: ``,
 })
-export class SortAndFilterComponent implements OnInit {
-  store = inject(HouseSortAndFilterStore);
-  listStore = inject(HouseListStore);
-
-  highestScore = computed(() => this.listStore.getAllScores()[0] || 0);
-  lowestScore = computed(() => {
-    const idx = this.listStore.getAllScores().length - 1;
-    return this.listStore.getAllScores()[idx - 1];
-  });
-  ngOnInit(): void {
-    this.store.setScoreFilter(this.highestScore());
-  }
+export class SortAndFilterComponent {
+  store = inject(HouseListSortAndFilterStore);
 }

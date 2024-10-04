@@ -1,6 +1,7 @@
 import { Component, ChangeDetectionStrategy, input } from '@angular/core';
-import { HouseRatingListItem } from '../../house-rating/types';
+
 import { RouterLink } from '@angular/router';
+import { HouseListModel } from '../../../stores';
 
 @Component({
   selector: 'app-house-list-item',
@@ -39,5 +40,5 @@ import { RouterLink } from '@angular/router';
   styles: ``,
 })
 export class HouseListItemComponent {
-  item = input.required<HouseRatingListItem>();
+  item = input.required<HouseListModel>();
 }

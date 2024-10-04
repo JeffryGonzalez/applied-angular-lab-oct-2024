@@ -1,39 +1,39 @@
 import { Routes } from '@angular/router';
 import { HalloweenComponent } from './halloween.component';
-import { HouseListStore } from './stores/house-list.store';
-import { HouseListComponent } from './pages/house-list/house-list.component';
-import { HouseRatingComponent } from './pages/house-rating/house-rating.component';
-import { RatingsService } from './services/ratings.service';
+import { HouseEntryComponent } from './pages/house-entry/house-entry.component';
 import { HousePendingStore } from './stores/house-pending.store';
-import { HouseEditComponent } from './pages/house-rating/house-edit.component';
-import { HouseSortAndFilterStore } from './stores/sort-and-filter.store';
 import { HouseStore } from './stores/house.store';
+import { HouseApiService } from './services/house-api.service';
+import { HouseListComponent } from './pages/house-list/house-list.component';
+import { HouseListSortAndFilterStore } from './stores/house-sort-and-filter.store';
+import { HouseListStore } from './stores/house-list.store';
 
 export const HALLOWEEN_ROUTES: Routes = [
   {
     path: '',
     providers: [
       HouseStore,
-      HouseListStore,
-      RatingsService,
       HousePendingStore,
-      HouseSortAndFilterStore,
+      HouseListStore,
+      HouseListSortAndFilterStore,
+      HouseApiService,
     ],
     component: HalloweenComponent,
     children: [
       {
         path: 'house-list',
         component: HouseListComponent,
-        children: [
-          {
-            path: 'edit/:id',
-            component: HouseEditComponent,
-          },
-        ],
       },
+      //   children: [
+      //     {
+      //       path: 'edit/:id',
+      //       component: HouseEditComponent,
+      //     },
+      //   ],
+      // },
       {
         path: 'house-entry',
-        component: HouseRatingComponent,
+        component: HouseEntryComponent,
       },
     ],
   },

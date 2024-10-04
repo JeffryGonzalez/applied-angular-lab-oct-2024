@@ -1,45 +1,46 @@
 import { patchState, signalStore, withHooks, withMethods } from '@ngrx/signals';
-import { addEntity, setEntities, withEntities } from '@ngrx/signals/entities';
-import { HouseListEntity, HouseRatingEntry } from '../pages/house-rating/types';
-import { tapResponse } from '@ngrx/operators';
-import { rxMethod } from '@ngrx/signals/rxjs-interop';
-import {
-  setError,
-  setPending,
-  setFulfilled,
-  withRequestStatus,
-} from '@shared/request-status.feature';
-import { pipe, tap, mergeMap, map } from 'rxjs';
-import { updateState, withDevtools } from '@angular-architects/ngrx-toolkit';
+import { addEntities, addEntity, withEntities } from '@ngrx/signals/entities';
+import { HouseEntity, HouseEntry } from '.';
+import { withDevtools } from '@angular-architects/ngrx-toolkit';
 import { inject } from '@angular/core';
-import { RatingsService } from '../services/ratings.service';
-import { HttpErrorResponse } from '@angular/common/http';
+import { HousePendingStore } from './house-pending.store';
+import { rxMethod } from '@ngrx/signals/rxjs-interop';
+import { map, mergeMap, pipe, switchMap, tap } from 'rxjs';
+import { HouseApiService } from '../services/house-api.service';
+import { tapResponse } from '@ngrx/operators';
 
 export const HouseStore = signalStore(
-  withEntities<HouseListEntity>(),
-  withRequestStatus(),
+  withEntities<HouseEntity>(),
   withDevtools('house'),
   withMethods((store) => {
-    const service = inject(RatingsService);
+    const pendingStore = inject(HousePendingStore);
+    const service = inject(HouseApiService);
     return {
-      _load: rxMethod<void>(
+      addEntry: rxMethod<HouseEntry>(
         pipe(
-          tap(() => patchState(store, setPending())),
-          mergeMap(() =>
-            service.getHouseList().pipe(
-              tapResponse({
-                next: (d) => patchState(store, setEntities(d), setFulfilled()),
-                error: () =>
-                  patchState(
-                    store,
-                    setError('Error Getting List - Server Returned Bad Data')
-                  ),
-              })
-            )
-          )
+          map((entry) => [entry, crypto.randomUUID()] as [HouseEntry, string]),
+          tap(([entry, id]) => pendingStore.addPending({ ...entry, id })),
+          mergeMap(([entry, id]: [HouseEntry, string]) =>
+            service.addHouseToList(entry, id)
+          ),
+          tapResponse({
+            next: ([house, tempid]) => {
+              patchState(store, addEntity(house));
+              pendingStore.removePending(tempid);
+            },
+            error: (error) => console.error({ error }),
+          })
         )
       ),
-      add: (entity: HouseListEntity) => patchState(store, addEntity(entity)),
+      _load: rxMethod<void>(
+        pipe(
+          switchMap(() => service.getHouseList()),
+          tapResponse({
+            next: (houses) => patchState(store, addEntities(houses)),
+            error: (error) => console.error({ error }),
+          })
+        )
+      ),
     };
   }),
   withHooks({

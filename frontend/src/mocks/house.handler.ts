@@ -1,10 +1,7 @@
 import { delay, http, HttpResponse } from 'msw';
-import {
-  HouseListEntity,
-  HouseRatingEntry,
-} from '../app/halloween/pages/house-rating/types';
+import { HouseEntity, HouseEntry } from '../app/halloween/stores';
 
-const fakeHouses: HouseListEntity[] = [
+const fakeHouses: HouseEntity[] = [
   {
     id: '1',
     address: '1212 Mockingbird Court',
@@ -15,43 +12,43 @@ const fakeHouses: HouseListEntity[] = [
   },
   {
     id: '2',
-    address: '506 Vaughn',
+    address: '12 Byron Court',
     hasAmbiance: false,
-    hasFullSizeCandy: false,
+    hasFullSizeCandy: true,
     qualityRating: 3,
     quantityRating: 4,
   },
   {
     id: '3',
-    address: '506 Reed',
+    address: '999 Aspington Drive',
     hasAmbiance: true,
-    hasFullSizeCandy: true,
+    hasFullSizeCandy: false,
     qualityRating: 3,
-    quantityRating: 4,
+    quantityRating: 5,
   },
   {
     id: '4',
-    address: '506 Reed',
+    address: '8 Elm',
     hasAmbiance: true,
     hasFullSizeCandy: true,
-    qualityRating: 3,
-    quantityRating: 4,
+    qualityRating: 1,
+    quantityRating: 2,
   },
   {
     id: '5',
-    address: '506 Reed',
-    hasAmbiance: true,
-    hasFullSizeCandy: true,
-    qualityRating: 3,
-    quantityRating: 4,
+    address: '50 Maple',
+    hasAmbiance: false,
+    hasFullSizeCandy: false,
+    qualityRating: 1,
+    quantityRating: 3,
   },
   {
     id: '6',
-    address: '506 Reed',
+    address: '18 Reno',
     hasAmbiance: true,
     hasFullSizeCandy: true,
-    qualityRating: 3,
-    quantityRating: 4,
+    qualityRating: 5,
+    quantityRating: 5,
   },
 ];
 
@@ -79,12 +76,12 @@ const handlers = [
     return HttpResponse.json(fakeHouses);
   }),
   http.post('/api/houses', async ({ request }) => {
-    const data = (await request.json()) as unknown as HouseRatingEntry;
-    await delay(data.address.length * 1000);
+    const data = (await request.json()) as unknown as HouseEntry;
+    await delay(data.address.length * 500);
     if (data.address === 'prospect') {
       return new HttpResponse('Address Not Found', { status: 400 });
     }
-    const response = { id: crypto.randomUUID(), ...data };
+    const response = { id: 'R' + crypto.randomUUID(), ...data };
     fakeHouses.push(response);
     return HttpResponse.json(response);
   }),
